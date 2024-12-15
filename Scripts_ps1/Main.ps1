@@ -51,7 +51,11 @@ function RunTask {
             Write-Output "Otimizando assemblies do .NET..."
             Optimize-DotNetAssemblies
         }
-        12 {
+        12 { 
+            Write-Output "Otimizando conexação de internet e DNS..."
+            Optimize-NetworkSettings
+        }
+        13 {
             Write-Output "Executando todas as tarefas..."
             foreach ($service in $servicesToConfigure.GetEnumerator()) {
                 Set-ServiceState -ServiceNamePattern $service.Key -StartupType $service.Value
@@ -66,6 +70,7 @@ function RunTask {
             Install-Winget
             Update-SystemPackages
             Optimize-DotNetAssemblies
+            Optimize-NetworkSettings
         }
         default { Write-Output "Opção inválida. Tente novamente." }
     }
@@ -89,7 +94,8 @@ function Show-Menu {
     Write-Host "9. Instalar Winget" -ForegroundColor Green
     Write-Host "10. Atualizar pacotes e programas do sistema" -ForegroundColor Green
     Write-Host "11. Otimizar assemblies do .NET" -ForegroundColor Green
-    Write-Host "12. Executar todas as tarefas" -ForegroundColor Magenta
+    Write-Host "12. Otimizar Internet e DNS" -ForegroundColor Green
+    Write-Host "13. Executar todas as tarefas" -ForegroundColor Magenta
     Write-Host ""
     Write-Host "0. Sair" -ForegroundColor Red
     Write-Host "====================================" -ForegroundColor Cyan
