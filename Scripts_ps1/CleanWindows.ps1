@@ -62,9 +62,6 @@ $packagesToRemove = @(
 
     # Mídia e Notícias
     "Microsoft.News",
-    "Microsoft.HEIFImageExtension",
-    "Microsoft.WebMediaExtensions",
-    "Microsoft.WebpImageExtension",
     "Microsoft.ShoppingApp",
 
     # Widgets
