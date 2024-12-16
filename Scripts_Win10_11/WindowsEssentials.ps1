@@ -5,9 +5,13 @@ function Install-ChocoPackages {
     )
     foreach ($package in $Packages) {
         try {
-            if (-not (choco list --local-only | Select-String -Pattern "^$package$")) {
+            # Obtém a lista de pacotes instalados
+            $installedPackages = choco list --local-only | ForEach-Object { ($_ -split '\|')[0].Trim() }
+
+            # Verifica se o pacote já está instalado
+            if (-not ($installedPackages -contains $package)) {
                 Write-Output "Instalando o pacote: ${package}..."
-                choco install $package -y | Out-File -Append $LogFile
+                choco install $package -y --ignore-checksums | Out-File -Append $LogFile
                 Write-Output "Pacote ${package} instalado com sucesso."
             } else {
                 Write-Output "Pacote já instalado: ${package}"
@@ -20,8 +24,12 @@ function Install-ChocoPackages {
 
 # Lista de pacotes para instalação via Chocolatey
 $ChocoPackages = @(
-    "powershell-core --pre",
+    "chocolatey-core.extension",
+    "microsoft-ui-xaml-2-7",
+    "webview2-runtime",
+    "powershell-core",
     "curl",
+    "wget",
     "python",
     "vcredist2005",
     "vcredist2008",
@@ -31,21 +39,27 @@ $ChocoPackages = @(
     "vcredist2015",
     "vcredist2017",
     "vcredist140",
+    "dotnet3.5",
+    "dotnet4.5.2",
+    "dotnet4.6.1",
+    "dotnetfx",
     "dotnet-desktopruntime",
     "dotnet-runtime",
-    "javaruntime",
+    "jre8",
     "xna",
-    "directx"
+    "directx",
     "ffmpeg",
     "nuget.commandline",
     "awscli",
-    "nvm",  
-    "nodejs",                 
+    "nvm",
+    "yarn",
+    "nodejs",
+    "jq",
     "git",
-    "gh",                     
+    "gh",
     "github-desktop",
     "vscode",
-    "dotnet-sdk",            
+    "dotnet-sdk",
     "correttojdk",
     "mysql.workbench",
     "fastfetch",
@@ -55,7 +69,7 @@ $ChocoPackages = @(
     "googledrive",
     "everything",
     "eartrumpet",
-    "brave-nightly --pre",
+    "brave-nightly",
     "bulk-crap-uninstaller",
     "lightshot",
     "meld",
@@ -65,8 +79,19 @@ $ChocoPackages = @(
     "yt-dlp",
     "vlc",
     "rustdesk",
+    "anydesk",
+    "thunderbird",
+    "keepass",
     "obs-studio",
+    "audacity",
+    "treesizefree",
     "windhawk"
 )
+
+# Ajuste para criar arquivo de log, caso ainda não exista
+$LogFile = "$env:TEMP\choco_install_log.txt"
+if (-not (Test-Path $LogFile)) {
+    New-Item -Path $LogFile -ItemType File | Out-Null
+}
 
 Install-ChocoPackages -Packages $ChocoPackages
