@@ -18,12 +18,16 @@ function CreateAdminUser {
     net user WinAdmin /logonpasswordchg:no
 
     # Desativa a expiração da senha
-    Get-WmiObject -Class Win32_UserAccount -Filter "Name='WinAdmin'" | ForEach-Object {
-        $_.PasswordExpires = $false
-        $_.Put()
+    $user = Get-CimInstance -ClassName Win32_UserAccount -Filter "Name='WinAdmin'"
+    if ($user) {
+        $user | Set-CimInstance -Property @{ PasswordExpires = $false }
+        Write-Host "Configuração de expiração de senha desativada para 'WinAdmin'." -ForegroundColor Green
+    } else {
+        Write-Host "Não foi possível localizar o usuário 'WinAdmin' no WMI." -ForegroundColor Red
     }
 
     Write-Host "Usuário 'WinAdmin' criado com sucesso e configurado com senha 123." -ForegroundColor Green
 }
 
+# Chamda de função para criar usuario Administrador
 CreateAdminUser

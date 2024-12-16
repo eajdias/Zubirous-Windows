@@ -1,47 +1,49 @@
 # Função para limpar arquivos temporários
 function Clear-TemporaryFiles {
-    Write-Output "Limpando arquivos temporários..."
+    Write-Host "Iniciando limpeza de arquivos temporários..." -ForegroundColor Cyan
     $paths = @("$env:TEMP\*", "C:\Windows\Temp")
 
     foreach ($path in $paths) {
         try {
             # Verifica se o diretório existe antes de tentar remover
             if (Test-Path $path) {
-                Get-ChildItem -Path $path -Recurse -Force | ForEach-Object {
-                    try {
-                        Remove-Item -Path $_.FullName -Recurse -Force -ErrorAction Stop
-                        Write-Output "Removido: $($_.FullName)"
-                    } catch {
-                        Write-Output "Não foi possível remover: $($_.FullName)"
-                    }
-                }
-                Write-Output "Arquivos em $path removidos."
+                Write-Host "Limpando arquivos em: $path" -ForegroundColor Yellow
+                Remove-Item -Path $path -Recurse -Force -ErrorAction Stop
+                Write-Host "Arquivos em $path removidos com sucesso." -ForegroundColor Green
             } else {
-                Write-Output "O caminho $path não existe."
+                Write-Host "O caminho $path não existe." -ForegroundColor Yellow
             }
         } catch {
-            Write-Output "Erro ao limpar $path. Detalhes: $_"
+            Write-Host "Erro ao limpar $path. Detalhes: $($_.Exception.Message)" -ForegroundColor Red
         }
     }
 }
+
 
 # Função para remover bloatware
 function Remove-AppxPackages {
     param (
         [array]$Packages
     )
+
+    Write-Host "Iniciando remoção de pacotes desnecessários..." -ForegroundColor Cyan
+
     foreach ($package in $Packages) {
         try {
-            $result = Get-AppxPackage -Name $package -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction Stop
-            if ($result) {
-                Write-Output "Pacote removido: $package"
+            $installedPackage = Get-AppxPackage -Name $package -ErrorAction SilentlyContinue
+            if ($installedPackage) {
+                Write-Host "Removendo pacote: $package" -ForegroundColor Yellow
+                Remove-AppxPackage -Package $installedPackage.PackageFullName -ErrorAction Stop
+                Write-Host "Pacote removido com sucesso: $package" -ForegroundColor Green
             } else {
-                Write-Output "Pacote não encontrado: $package"
+                Write-Host "Pacote não encontrado ou já removido: $package" -ForegroundColor Yellow
             }
         } catch {
-            Write-Output "Erro ao remover o pacote: $package"
+            Write-Host "Erro ao remover o pacote ${package}: $($_.Exception.Message)" -ForegroundColor Red
         }
     }
+
+    Write-Host "Remoção de pacotes concluída." -ForegroundColor Cyan
 }
 
 # Lista de pacotes do Windows a serem removidos (bloatware)
@@ -76,6 +78,6 @@ $packagesToRemove = @(
     "Microsoft.People"
 )
 
+# Executar a limpeza
 Clear-TemporaryFiles
 Remove-AppxPackages -Packages $packagesToRemove
-

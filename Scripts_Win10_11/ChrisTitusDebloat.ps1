@@ -4,15 +4,23 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     exit
 }
 
-# Função para otimizar o Windows
+# Função para carregar o Script de Debloat
 function ChrisTitusDebloat {
-    Write-Host "Carregando Script de Debloat..." -ForegroundColor Green
+    Write-Host "Iniciando script de debloat do Chris Titus..." -ForegroundColor Cyan
+
+    # URL do script externo
+    $scriptUrl = "https://christitus.com/windev"
 
     # Obtém o caminho do executável do PowerShell
     $powershellPath = (Get-Command powershell.exe).Source
 
-    # Inicia uma nova janela do PowerShell para executar o comando
-    Start-Process -FilePath $powershellPath -ArgumentList '-NoProfile -ExecutionPolicy Bypass -Command "Invoke-RestMethod -Uri https://christitus.com/windev | Invoke-Expression"' -Verb RunAs
+    # Abre uma nova janela do PowerShell e executa o script
+    Start-Process -FilePath $powershellPath `
+        -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"Invoke-RestMethod -Uri '$scriptUrl' | Invoke-Expression`"" `
+        -Verb RunAs
+
+    Write-Host "Uma nova janela do PowerShell foi aberta para executar o script." -ForegroundColor Green
 }
 
+# Executar a função
 ChrisTitusDebloat

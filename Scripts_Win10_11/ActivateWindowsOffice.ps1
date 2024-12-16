@@ -4,15 +4,26 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     exit
 }
 
-# Função para ativar o Windows
+# Função para ativar o Windows ou Office
 function ActivateWindowsOffice {
-    Write-Host "Ativando o Windows ou Office..." -ForegroundColor Green
+    Write-Host "Iniciando processo de ativação do Windows ou Office..." -ForegroundColor Cyan
+
+    $activationUrl = "https://get.activated.win"
+
     try {
-        Invoke-RestMethod -Uri https://get.activated.win | Invoke-Expression
-        Write-Host "Processo de ativação concluído." -ForegroundColor Green
+        # Verifica se a URL está acessível
+        Write-Host "Baixando script de ativação..." -ForegroundColor Yellow
+        $scriptContent = Invoke-RestMethod -Uri $activationUrl -ErrorAction Stop
+
+        # Executa o conteúdo baixado diretamente
+        Write-Host "Executando script de ativação..." -ForegroundColor Yellow
+        Invoke-Command -ScriptBlock ([ScriptBlock]::Create($scriptContent))
+
+        Write-Host "Processo de ativação concluído com sucesso." -ForegroundColor Green
     } catch {
-        Write-Host "Falha ao ativar o Windows: $_" -ForegroundColor Red
+        Write-Host "Falha ao ativar o Windows ou Office: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
+# Chamar a função diretamente
 ActivateWindowsOffice

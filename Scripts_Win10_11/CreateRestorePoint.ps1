@@ -5,21 +5,31 @@ function CreateRestorePoint {
 
     # Verifica se o PowerShell está sendo executado como Administrador
     if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-        Write-Output "Este script precisa ser executado como Administrador."
-        return
+        Write-Host "Este script precisa ser executado como Administrador." -ForegroundColor Red
+        exit
+    }
+
+    # Verifica se a Restauração do Sistema está habilitada
+    Write-Host "Verificando se a Restauração do Sistema está habilitada..." -ForegroundColor Cyan
+    $restoreEnabled = (Get-ComputerRestorePoint -ErrorAction SilentlyContinue).Count -ge 0
+    if (-not $restoreEnabled) {
+        Write-Host "Erro: A Restauração do Sistema não está habilitada neste computador." -ForegroundColor Red
+        exit
     }
 
     try {
-        Write-Output "Criando ponto de restauração: '$Description'..."
+        Write-Host "Criando ponto de restauração: '$Description'..." -ForegroundColor Yellow
 
         # Cria o ponto de restauração diretamente
         Checkpoint-Computer -Description $Description -RestorePointType MODIFY_SETTINGS
 
-        Write-Output "Ponto de restauração criado com sucesso."
+        Write-Host "Ponto de restauração criado com sucesso!" -ForegroundColor Green
     } catch {
-        Write-Output "Erro ao criar o ponto de restauração: $($_.Exception.Message)"
+        Write-Host "Erro ao criar o ponto de restauração: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
-# Exemplo de uso
+# Chamada de função para criar ponto de restauração
+Write-Host "Iniciando criação de ponto de restauração..." -ForegroundColor Cyan
 CreateRestorePoint -Description "Ponto de Restauração Zubirous"
+

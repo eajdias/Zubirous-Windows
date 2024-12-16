@@ -1,3 +1,9 @@
+# Verificação de permissões administrativas
+if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    Write-Host "Este script deve ser executado com permissões administrativas." -ForegroundColor Red
+    exit
+}
+
 # Função para configurar o estado de serviços
 function Set-ServiceState {
     param (
@@ -11,37 +17,38 @@ function Set-ServiceState {
     if ($services) {
         foreach ($service in $services) {
             try {
-                # Obter o modo de inicialização atual
+                # Obter o modo de inicialização atual usando Get-CimInstance
                 $currentType = (Get-CimInstance -ClassName Win32_Service -Filter "Name='$($service.Name)'" -ErrorAction Stop).StartMode
 
-                # Ignorar serviços que não podem ser configurados
+                # Ignorar serviços gerenciados dinamicamente
                 if ($service.Name -match ".*_.*") {
-                    Write-Output "Serviço ignorado (gerenciado dinamicamente): $($service.Name)"
+                    Write-Host "Serviço ignorado (gerenciado dinamicamente): $($service.Name)" -ForegroundColor Yellow
                     continue
                 }
 
                 # Alterar o modo de inicialização se necessário
                 if ($currentType -ne $StartupType) {
-                    Set-Service -Name $service.Name -StartupType $StartupType -ErrorAction Stop
-                    Write-Output "Configuração alterada: $($service.Name) -> $StartupType"
+                    # Alternativa usando 'sc.exe' para serviços que falham com Set-Service
+                    sc.exe config $service.Name start= $StartupType | Out-Null
+                    Write-Host "Configuração alterada: $($service.Name) -> $StartupType" -ForegroundColor Green
                 } else {
-                    Write-Output "Sem alteração necessária para: $($service.Name)"
+                    Write-Host "Sem alteração necessária para: $($service.Name)" -ForegroundColor Cyan
                 }
             } catch {
-                Write-Output "Erro ao configurar o serviço: $($service.Name). Detalhes: $_"
+                Write-Host "Erro ao configurar o serviço: $($service.Name). Detalhes: $($_.Exception.Message)" -ForegroundColor Red
             }
         }
     } else {
-        Write-Output "Nenhum serviço encontrado para o padrão: $ServiceNamePattern"
+        Write-Host "Nenhum serviço encontrado para o padrão: $ServiceNamePattern" -ForegroundColor Yellow
     }
 }
 
 # Lista de serviços e seus estados desejados
 $servicesToConfigure = @{
-    "CDPUserSvc_*" = "Automatic"
-    "COMSysApp" = "Manual"
-    "CaptureService_*" = "Manual"
-    "CertPropSvc" = "Manual"
+    "CDPUserSvc_*"    = "Automatic"
+    "COMSysApp"       = "Manual"
+    "CaptureService_*"= "Manual"
+    "CertPropSvc"     = "Manual"
     "ClipSVC" = "Manual"
     "ConsentUxUserSvc_*" = "Manual"
     "CoreMessagingRegistrar" = "Automatic"
@@ -252,7 +259,8 @@ $servicesToConfigure = @{
     "ClickToRunSvc" = "Manual"
 }
 
-Write-Output "Configurando serviços do Windows..."
+# Ativar a função de configuração dos serviços
+Write-Host "Configurando serviços do Windows..." -ForegroundColor Cyan
 foreach ($service in $servicesToConfigure.GetEnumerator()) {
     Set-ServiceState -ServiceNamePattern $service.Key -StartupType $service.Value
 }

@@ -7,23 +7,40 @@ function Set-ExecutionPolicyTemporary {
     Write-Output "Política de execução ajustada para: $Policy"
 }
 
-# Instalação do Chocolatey
+# Função para instalar o Chocolatey de forma segura
 function Install-Chocolatey {
+    # Verifica se o Chocolatey já está instalado
     if (Get-Command choco -ErrorAction SilentlyContinue) {
         Write-Output "Chocolatey já está instalado."
         return
     }
+
     try {
         Write-Output "Iniciando instalação do Chocolatey..."
-        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-        Write-Output "Chocolatey instalado com sucesso."
+
+        # Define um caminho temporário para o script de instalação
+        $tempScript = "$env:TEMP\choco-install.ps1"
+
+        # Baixa o script de instalação usando Invoke-WebRequest
+        Invoke-WebRequest -Uri "https://community.chocolatey.org/install.ps1" -OutFile $tempScript
+
+        # Executa o script baixado em um processo separado
+        Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File $tempScript" -Wait
+
+        # Verifica se a instalação foi concluída com sucesso
+        if (Get-Command choco -ErrorAction SilentlyContinue) {
+            Write-Output "Chocolatey instalado com sucesso."
+        } else {
+            Write-Output "Falha na instalação do Chocolatey."
+        }
+
     } catch {
-        Write-Output "Erro ao instalar o Chocolatey: $_"
+        Write-Output "Erro ao instalar o Chocolatey: $($_.Exception.Message)"
     }
 }
 
-# Configurar a política de execução
+# Configurar a política de execução para ter certeza
 Set-ExecutionPolicyTemporary -Policy "Bypass"
 
-# Instalar o Chocolatey
+# Verifica e instala o Chocolatey se não estiver instalado
 Install-Chocolatey

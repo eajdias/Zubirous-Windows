@@ -1,43 +1,44 @@
 # Configuração do Caminho do Backup
 $DefaultBackupPath = "C:\BackupDrivers"
 
+# Verificação de permissões administrativas
+if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    Write-Host "Este script deve ser executado com permissões administrativas." -ForegroundColor Red
+    exit
+}
+
 # Função: Criar Backup dos Drivers
 function Backup-Drivers {
     param (
         [string]$BackupPath = $DefaultBackupPath
     )
+
     try {
-        Write-Host "Verificando pasta de destino para backup..." -ForegroundColor Yellow
-        if (!(Test-Path -Path $BackupPath)) {
+        Write-Host "Verificando pasta de destino para backup..." -ForegroundColor Cyan
+
+        # Criação do diretório se não existir
+        if (-not (Test-Path -Path $BackupPath)) {
             New-Item -ItemType Directory -Path $BackupPath | Out-Null
             Write-Host "Pasta de backup criada em: $BackupPath" -ForegroundColor Green
+        } else {
+            Write-Host "Pasta de destino já existe: $BackupPath" -ForegroundColor Yellow
         }
-        Write-Host "Iniciando backup dos drivers..." -ForegroundColor Yellow
+
+        # Execução do backup dos drivers com DISM
+        Write-Host "Iniciando backup dos drivers. Aguarde..." -ForegroundColor Cyan
         dism /online /export-driver /destination:$BackupPath
-        Write-Host "Backup concluído com sucesso! Drivers salvos em: $BackupPath" -ForegroundColor Green
-    } catch {
-        Write-Host "Erro ao fazer backup dos drivers: $_" -ForegroundColor Red
-    }
-}
 
-# Função: Restaurar Drivers
-function Restore-Drivers {
-    param (
-        [string]$BackupPath = $DefaultBackupPath
-    )
-    try {
-        Write-Host "Verificando pasta de backup..." -ForegroundColor Yellow
-        if (!(Test-Path -Path $BackupPath)) {
-            Write-Host "Erro: A pasta de backup não foi encontrada em: $BackupPath" -ForegroundColor Red
-            return
+        # Validação do resultado
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "Backup concluído com sucesso! Drivers salvos em: $BackupPath" -ForegroundColor Green
+        } else {
+            Write-Host "Falha ao realizar o backup. Código de saída: $LASTEXITCODE" -ForegroundColor Red
         }
-        Write-Host "Iniciando restauração dos drivers..." -ForegroundColor Yellow
-        pnputil /add-driver "$BackupPath\*.inf" /sub
-        Write-Host "Drivers restaurados com sucesso!" -ForegroundColor Green
     } catch {
-        Write-Host "Erro ao restaurar os drivers: $_" -ForegroundColor Red
+        Write-Host "Erro ao fazer backup dos drivers: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
+# Chamada de função para Criar o Backup de Drivers
+Write-Host "==== Iniciando Backup de Drivers ====" -ForegroundColor Cyan
 Backup-Drivers
-Restore-Drivers
