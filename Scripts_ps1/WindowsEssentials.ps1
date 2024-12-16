@@ -37,6 +37,7 @@ $ChocoPackages = @(
     "oracle.javaruntimeenvironment",
     "microsoft.dotnet.runtime.preview",
     "microsoft.xnaredist",
+    "directx"
     "gyan.ffmpeg",
     "fastfetch-cli.fastfetch",
     "7zip.7zip",

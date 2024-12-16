@@ -60,11 +60,32 @@ function RunTask {
             Backup-Drivers
         }
         14 { 
+            Write-Output "Compactar Sistema Operacional (Windows)..."
+            CompactWindows
+        }
+        15 { 
+            Write-Output "Criar usuario WinAdmin no Windows..."
+            CreateAdminUser
+        }
+        16 { 
+            Write-Output "Detectando e atualizando GPUs ..."
+            Update-GPUDrivers
+        }
+        17 { 
+            Write-Output "Ativar o Windows ou Office..."
+            ActivateWindowsOffice
+        }
+        18 { 
             Write-Output "Restaurando Drivers apartir de Backup..."
             Restore-Drivers
         }
-        15 {
-            Write-Output "Executando todas as tarefas..."
+        19 { 
+            Write-Output "Ferramenta - ChrisTitus Debloat..."
+            ChrisTitusDebloat
+        }
+        20 {
+            CreateRestorePoint -Description "Ponto de Restauração - Pos-Formatação (Zubirous)"
+            Write-Output "Executando todas as tarefas (1 - 17)..."
             foreach ($service in $servicesToConfigure.GetEnumerator()) {
                 Set-ServiceState -ServiceNamePattern $service.Key -StartupType $service.Value
             }
@@ -80,6 +101,10 @@ function RunTask {
             Optimize-DotNetAssemblies
             Optimize-NetworkSettings
             Backup-Drivers
+            CompactWindows
+            CreateAdminUser
+            Update-GPUDrivers
+            ActivateWindowsOffice
         }
         default { Write-Output "Opção inválida. Tente novamente." }
     }
@@ -92,21 +117,26 @@ function Show-Menu {
     Write-Host "       MENU DE MANUTENÇÃO          " -ForegroundColor Yellow
     Write-Host "====================================" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "1. Configurar serviços do Windows" -ForegroundColor Green
-    Write-Host "2. Limpar arquivos temporários" -ForegroundColor Green
-    Write-Host "3. Remover bloatware" -ForegroundColor Green
-    Write-Host "4. Otimizar discos" -ForegroundColor Green
+    Write-Host "1. Configuração Geral dos serviços do Windows" -ForegroundColor Green
+    Write-Host "2. Limpar arquivos temporários do Sistema" -ForegroundColor Green
+    Write-Host "3. Remover Bloatware (Programas inuteis do Windows)" -ForegroundColor Green
+    Write-Host "4. Otimizar discos (HD, SSD, NVme2)" -ForegroundColor Green
     Write-Host "5. Verificar e reparar erros do Windows" -ForegroundColor Green
     Write-Host "6. Executar otimizações do sistema" -ForegroundColor Green
-    Write-Host "7. Instalar ferramentas de desenvolvimento (Chocolatey)" -ForegroundColor Green
-    Write-Host "8. Instalar pacotes do sistema (Chocolatey)" -ForegroundColor Green
-    Write-Host "9. Instalar Winget" -ForegroundColor Green
+    Write-Host "7. Instalar ferramentas para programação" -ForegroundColor Green
+    Write-Host "8. Instalar pacotes e programas essenciais do Sistema" -ForegroundColor Green
+    Write-Host "9. Instalar Winget (se necessário)" -ForegroundColor Green
     Write-Host "10. Atualizar pacotes e programas do sistema" -ForegroundColor Green
     Write-Host "11. Otimizar assemblies do .NET" -ForegroundColor Green
-    Write-Host "12. Otimizar Internet e DNS" -ForegroundColor Green
+    Write-Host "12. Otimizar conexão de Internet e DNS" -ForegroundColor Green
     Write-Host "13. Realizar Backup de todos Drivers" -ForegroundColor Green
-    Write-Host "14. Restaurar Drivers apartir de Backup" -ForegroundColor Green
-    Write-Host "15. Executar todas as tarefas (menos restauração de drivers)" -ForegroundColor Magenta
+    Write-Host "14. Compactar o Sistema Operacional " -ForegroundColor Green
+    Write-Host "15. Criar usuario WinAdmin (senha 123) " -ForegroundColor Green
+    Write-Host "16. Detectar e atualizar GPUs" -ForegroundColor Green
+    Write-Host "17. Ativar o Windows ou Office" -ForegroundColor Green
+    Write-Host "18. Restaurar Drivers apartir de Backup" -ForegroundColor Green
+    Write-Host "19. Ferramenta - ChrisTitus Windows Debloat " -ForegroundColor Green
+    Write-Host "20. Pós-Formatação (Executar todas tarefas 1 - 17)" -ForegroundColor Magenta
     Write-Host ""
     Write-Host "0. Sair" -ForegroundColor Red
     Write-Host "====================================" -ForegroundColor Cyan
@@ -133,3 +163,4 @@ do {
     }
     Pause
 } while ($true)
+
