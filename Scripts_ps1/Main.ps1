@@ -30,6 +30,7 @@ function RunTask {
         6 { 
             Write-Output "Executando otimizações do sistema..."
             PerformSystemOptimizations
+            Update-General
         }
         7 { 
             Write-Output "Instalando ferramentas de desenvolvimento..."
@@ -94,6 +95,7 @@ function RunTask {
             Optimize-Disks
             CheckAndRepairWindows
             PerformSystemOptimizations
+            Update-General
             Install-DevTools
             Install-ChocoPackages -Packages $ChocoPackages
             Install-Winget

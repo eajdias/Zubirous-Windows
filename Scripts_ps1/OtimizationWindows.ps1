@@ -65,6 +65,49 @@ function Optimize-DotNetAssemblies {
     }
 }
 
+# Função para instalar atualizações do Windows Update
+function Update-General {
+    # Verificar se o script está sendo executado como administrador
+    if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        Write-Error "Este script deve ser executado com permissões administrativas."
+        return
+    }
+
+    # Verificar e instalar o módulo PSWindowsUpdate se necessário
+    if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate)) {
+        Write-Host "Instalando o módulo PSWindowsUpdate..."
+        Install-Module PSWindowsUpdate -Force -ErrorAction Stop
+    } else {
+        Write-Host "Módulo PSWindowsUpdate já está instalado."
+    }
+
+    # Obter atualizações disponíveis
+    Write-Host "Buscando atualizações disponíveis..."
+    $updates = Get-WindowsUpdate -ErrorAction Stop
+
+    # Verificar se há atualizações disponíveis
+    if ($updates.Count -eq 0) {
+        Write-Host "Não há atualizações disponíveis. O sistema já está atualizado."
+        return
+    }
+
+    # Confirmar instalação das atualizações
+    $confirmation = Read-Host "Foram encontradas $($updates.Count) atualizações. Deseja instalá-las? (S/N)"
+    if ($confirmation -ne 'S') {
+        Write-Host "Instalação de atualizações cancelada."
+        return
+    }
+
+    # Instalar atualizações
+    Write-Host "Instalando atualizações..."
+    Install-WindowsUpdate -AcceptAll -IgnoreReboot -Verbose -ErrorAction Stop
+
+    # Mensagem final
+    Write-Host "Todas as atualizações foram instaladas com sucesso!"
+}
+
+
 Update-SystemPackages
 PerformSystemOptimizations
 Optimize-DotNetAssemblies
+Update-General
