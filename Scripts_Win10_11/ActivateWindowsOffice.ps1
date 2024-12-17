@@ -27,3 +27,4 @@ function ActivateWindowsOffice {
 
 # Chamar a função diretamente
 ActivateWindowsOffice
+
